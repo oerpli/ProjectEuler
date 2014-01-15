@@ -4,8 +4,7 @@ digits :: Integer -> [Integer]
 digits 0 = []
 digits x = (mod x 10) : digits (div x 10)
 
-fac 0 = 1
-fac x = x*(fac (x-1))
+fac n = product [1..n]
 
 fibonacci :: Integer -> Integer
 fibonacci 0 = 0
