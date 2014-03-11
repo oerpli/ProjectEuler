@@ -21,7 +21,9 @@ fibs = fibS 0 1
 
 ---------------------------------------------------------------------------
 -- Primes
-prime n = n > 1 && foldr (\p r -> p*p > n || ((n `rem` p) /= 0 && r)) True primes
+prime :: Integer -> Bool
+prime n = n > 1 && foldr (\p r -> p*p > n || ((rem n p) /= 0 && r)) True primes
+
 primes :: [Integer]
 primes = 2:mkPrimes 3 M.empty prs 9   -- postponed addition of primes into map;
   where                                  -- decoupled primes loop feed 
@@ -37,15 +39,29 @@ primes = 2:mkPrimes 3 M.empty prs 9   -- postponed addition of primes into map;
     addSkips = foldl' . addSkip
 -- primes = 2 : [i | i <- [3..],   --20% slower
 	-- and [rem i p > 0 | p <- takeWhile ((<=i).(^2)) primes]]
+-- factors
+---------------------------------------
+pfactors :: Integer -> [Integer]
+pfactors n = factP n [2..]
+
+factP :: Integer -> [Integer] -> [Integer]
+factP n (p:ps)
+ | p*p <= n = if mod n p == 0 then [p] ++ factP (div n p) (p:ps) else factP n ps
+ |otherwise = [n]
+
 ----------------------------------------------------------------------------
 -- Allgemeines Zeug
-kgt :: [Integer] -> Integer -- gcd of a list
-kgt [] = 1
-kgt [x] = x
-kgt [x,y] = gcd x y
-kgt (x:y:r) = gcd x (kgt (y:r))
+kgV :: [Integer] -> Integer -- gcd of a list
+kgV [] = 1
+kgV [x] = x
+kgV [x,y] = lcm x y
+kgV (x:y:r) = lcm x (kgV (y:r))
 
-
+ggT :: [Integer] -> Integer -- gcd of a list
+ggT [] = 1
+ggT [x] = x
+ggT [x,y] = gcd x y
+ggT (x:y:r) = gcd x (ggT (y:r))
 
 
 
