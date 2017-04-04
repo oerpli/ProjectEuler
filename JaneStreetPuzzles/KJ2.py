@@ -29,7 +29,12 @@ def fixed():
     return [4,  7, 10, 13, 16, 19, 22, 25, 28, 31, 34, 37, 40, 43, 46, 49]
 
 
-def Regions(i):
+def Regions(i=-1):
+    if i == -1:
+        r = []
+        for i in range(12):
+            r.append(Regions(i))
+        return r
     if i == 0:
         return [(0, 0), (0, 1), (0, 2), (0, 3), (1, 3), (1, 0), (2, 0), (3, 0)]
     if i == 1:
@@ -56,49 +61,25 @@ def Regions(i):
         return [(6, 4), (5, 4), (9, 7), (6, 6), (7, 6), (9, 8), (9, 9), (8, 9), (7, 4), (8, 8), (8, 7), (8, 6), (7, 8), (6, 5), (7, 9)]
 
 
-def Reg():
-    r = []
-    for i in range(12):
-        r.append(Regions(i))
-    return r
-
-
 def initMap():
-    m = np.zeros((n, n))
-    for i, e in enumerate(Reg()):
+    global M
+    M = np.zeros((n, n))
+    for i, e in enumerate(Regions()):
         for (x, y) in e:
-            m[x, y] = i
-    return m
-
-
-def cReg():
-    c = Reg()
-    return sum(c, [])
-
-
-def sumRow(A):
-    sr = []
-    for i, e in enumerate(A):
-        sr.append(0)
-        for x in e:
-            if x > 0:
-                sr[-1] += 1
-    return sr
+            M[x, y] = i
 
 
 def sumCol(A):
-    return sumRow(A.transpose())
+    return (A > 0).sum(0)
+
+
+def sumRow(A):
+    return (A > 0).sum(1)
 
 
 def sumReg(A):
-    r = Reg()
-    sr = []
-    for reg in r:
-        sr.append(0)
-        for (a, b) in reg:
-            if A[a, b] > 0:
-                sr[-1] += 1
-    return sr
+    x = (A > 0)
+    return [x[M == i].sum() for i in range(12)]
 
 
 def check(A):
@@ -113,19 +94,13 @@ def steps(A, x, y):
           (2, 1), (-2, 1), (2, -1), (-2, -1)]
     v = A[x, y] + 1
     f = v in fixed()
-    if f:
-        for (a, b) in ps:
-            a += x
-            b += y
-            if a >= 0 and b >= 0 and a < n and b < n:
-                if A[a, b] == v:
+    for (a, b) in [(a + x, b + y) for (a, b) in ps]:
+        if a >= 0 and b >= 0 and a < n and b < n:
+            if f:
+                if A[a, b] == v and M[a, b] != M[x, y]:
                     yield (a, b)
                     return
-    else:
-        for (a, b) in ps:
-            a += x
-            b += y
-            if a >= 0 and b >= 0 and a < n and b < n:
+            else:
                 if A[a, b] == 0 and M[a, b] != M[x, y]:
                     yield (a, b)
 
@@ -172,9 +147,8 @@ M = 0
 
 
 def Solve():
-    global M
     A = init()
-    M = initMap()
+    initMap()
     (r, b) = explore()
     b[b == -1] = 0
     return b
